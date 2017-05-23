@@ -11,30 +11,73 @@ import java.io.File
 class Parser(){
 
     var issues: ArrayList<Issue> = ArrayList()
-
     var api: ApiConnector = ApiConnector()
 
+    var removeFromRemote: Boolean = true
+
+    fun parseProject(root: File){
+        traverse(root)
+
+        println("Finished scan!")
+
+        if(removeFromRemote){
+            println("Removing deleted Issues..")
+            api.removeUnused(issues)
+        }
+    }
+
+    fun traverse(file: File){
+        if(file.isDirectory){
+            file.listFiles().forEach { f ->
+                traverse(f)
+            }
+        } else {
+            parseFile(file)
+        }
+    }
+
+
+    // Git-Issue: Enable Multi-Line Parsing
+    // Git-Issue: Add Number-Parsing
+    // Git-Issue: Parse Label-Definition
     fun parseFile(file: File) {
         for (line in file.readLines()){
             if(line.contains("Git-Issue")){
-
-                try {
-
+               try {
                     val issueContent = line.split(":")[1]
-                    val issueTitle = issueContent.split(">>")[0]
+                    val issueTitle = issueContent.split(">>")[0].removeSurrounding(" ")
 
                     if(issueContent.split(">>").size > 1){
-                        val issueBody = issueContent.split(">>")[1]
-                        api.postIssue(Issue(issueTitle, issueBody))
-                        return;
+                        val issueBody = issueContent.split(">>")[1].split("<<")[0]
+                        foundIssue(Issue(issueTitle, issueBody.removeSurrounding(" ")))
+                        continue
                     }
 
-                    api.postIssue(Issue(issueTitle))
+                   foundIssue(Issue(issueTitle))
                 }  catch (e: Exception) {
-                    println("Error Parsing Git issue in file "+file.name)
-                }
+                   println("Skipping "+line)
+                   continue
+               }
             }
         }
+    }
+
+    fun foundIssue(issue: Issue){
+
+        issues.add(issue)
+
+        val completeIssue = api.getIssue(issue)
+
+        // Add Issue if not already online
+        if(completeIssue == null){
+            api.postIssue(issue)
+            return
+        }
+
+        /**
+         * Git-Issue: Write Number after title >> Have to write at specific position at specific file <<
+         */
+
     }
 
 

@@ -1,36 +1,25 @@
-// Git-Issue: 
+# Issue-Extract
 
-Ordnerpfad angeben
+Extracts Issues from source-code and dynamically adds and deletes them from the remote github-repository
 
-Clientseitig?
-
-intellij-plugin mit id-inc?
-
-Daten aus .git/config
-
-Syntax: 
-
-// Git-Issue: <Title> <IssueText> [<Labels>]
-// Git-Issue '<Title>': '<IssueText>' ['Label1','Label2']
+## Syntax
+Git-Issue: <Title> >> <Body> <<
 
 /** Git-Issue 'SomeTitle'
 	'SomeText'
 	['Label1','label2']
 **/
 
-# Design
+TODO
+    + Labels
+
+## Output-Design
 + Title
 + Body 
 	+ IssueText
 	+ Position in Project (File, Row)
 	+ Vlt. mit Methode oder Klasse beim nächsten
 		=> Einfach die Zeile Danach
-	
 
-# Architektur
-+ Parser
-	-> Statemachine
-	-> Beim durchlaufen bei jedem state-accept überprüfen welcher state-type es ist und dementsprechend zuordnen
-	-> StartState -> [// | /* ] commentstart -> [Git-issue] IssueStart | [\n || */] EndState 
-	-> IssueStart ' -> Title -> ['] TitleEnd -> 
-	
+TODO:
+intellij-plugin mit id-inc?
