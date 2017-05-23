@@ -1,8 +1,10 @@
 import java.io.File
+import kotlin.concurrent.thread
 
 class App {
 
     var path: String = ""
+    var parser: Parser = Parser()
 
     companion object {
         @JvmStatic fun main(args: Array<String>) {
@@ -16,8 +18,9 @@ class App {
                 traverse(f)
             }
         } else {
-            println("File")
-            println(file.name)
+
+            parser.parseFile(file)
+
         }
     }
 
@@ -36,7 +39,13 @@ class App {
 
         var file = File(path)
 
+        val start = System.nanoTime()
+
         traverse(file)
+
+        val end = System.nanoTime()
+
+        println("Runned "+end.minus(start)/1000)
 
     }
 }
