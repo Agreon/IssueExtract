@@ -26,9 +26,13 @@ class App {
             parser.removeFromRemote = false
         }
 
+        val config = File("config.ie")
+        val token = config.readLines().get(0)
+        println("UserToken "+token)
+
         val start = System.nanoTime()
 
-        parser.parseProject(File(path))
+        parser.parseProject(File(path), token)
 
         val end = System.nanoTime()
 

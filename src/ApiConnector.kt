@@ -9,8 +9,8 @@ import java.io.File
  */
 class ApiConnector() {
 
+    var authToken: String = ""
     val baseAddress = "https://api.github.com"
-    val authToken = "token b95abf2ebd6851b99d9e22ae3dda6cb617b6df78"
 
     var onlineIssues: ArrayList<Issue> = ArrayList()
     var onlineLabels: HashMap<String, JSONObject> = HashMap()

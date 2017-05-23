@@ -1,11 +1,6 @@
 import java.io.File
 
 /**
- * Created by root on 23.05.17.
- */
-
-
-/**
  *
  */
 class Parser(){
@@ -15,7 +10,9 @@ class Parser(){
 
     var removeFromRemote: Boolean = true
 
-    fun parseProject(root: File){
+    fun parseProject(root: File, userToken: String){
+        api.authToken = userToken
+
         traverse(root)
 
         println("Finished scan!")
@@ -37,7 +34,7 @@ class Parser(){
     }
 
 
-    // Git-Issue: Enable Multi-Line Parsing
+    // Git-Issue: Enable Multiline Parsing >> # This is going to be hard <<
     // Git-Issue: Add Number-Parsing
     // Git-Issue: Parse Label-Definition
     fun parseFile(file: File) {
@@ -47,13 +44,14 @@ class Parser(){
                     val issueContent = line.split(":")[1]
                     val issueTitle = issueContent.split(">>")[0].removeSurrounding(" ")
 
+                    // Body
                     if(issueContent.split(">>").size > 1){
                         val issueBody = issueContent.split(">>")[1].split("<<")[0]
                         foundIssue(Issue(issueTitle, issueBody.removeSurrounding(" ")))
                         continue
                     }
 
-                   foundIssue(Issue(issueTitle))
+                    foundIssue(Issue(issueTitle))
                 }  catch (e: Exception) {
                    println("Skipping "+line)
                    continue
