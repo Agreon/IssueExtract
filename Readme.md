@@ -6,14 +6,14 @@ Clientseitig?
 
 intellij-plugin mit id-inc?
 
-DAtena us .git/config
-
+Daten aus .git/config
 
 Syntax: 
 
 // Issue: <Title> <IssueText> [<Labels>]
+// Issue '<Title>': '<IssueText>' ['Label1','Label2']
 
-# Design 
+# Design
 + Title
 + Body 
 	+ IssueText
