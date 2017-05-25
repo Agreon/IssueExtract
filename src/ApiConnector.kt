@@ -3,6 +3,14 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
+
+/**
+ * Git-Issue[83]]: {
+ * When no connection to internet is possible - Abort
+ * >>  <<
+ * [ development ]
+ * }
+ */
 /**
  * Git-Issue: make origin selectable
  * Git-Issue: Handle ambigious titles
@@ -13,7 +21,6 @@ class ApiConnector() {
     val baseAddress = "https://api.github.com"
 
     var onlineIssues: ArrayList<Issue> = ArrayList()
-    var onlineLabels: HashMap<String, JSONObject> = HashMap()
 
     var repoOwner: String = ""
     var repoName: String = ""
@@ -32,27 +39,12 @@ class ApiConnector() {
             println("User: " + tuple[0])
             println("Repository: " + repoName)
 
-            getLabelsFromRepo()
             getIssuesFromRepo()
         } catch (e: Exception){
             e.printStackTrace()
             throw Exception("[Error]: Git-Config corrupted!")
         }
     }
-
-    fun getLabelsFromRepo(){
-        println("Getting Labels..")
-
-        var labels = get("$baseAddress/repos/$repoOwner/$repoName/labels").jsonArray
-
-        println("Got Labels: " + labels.length())
-
-        for (label in labels) {
-            val labelObj = JSONObject(label.toString())
-            onlineLabels.put(labelObj.getString("name"),labelObj)
-        }
-    }
-
 
     /**
      * Git-Issue: Check differences between local and online-issues >> Best would be to check if the numbers are the same, (if only the title changed), so the old ones don't have to be deleted. <<
@@ -77,7 +69,7 @@ class ApiConnector() {
                 body = ""
             }
 
-            val newIssue = Issue(title, body, number.toString())
+            val newIssue = Issue(title, body, 0, "", number.toString())
 
             val labels = issueObj.getJSONArray("labels")
 
@@ -103,17 +95,18 @@ class ApiConnector() {
 
         val params = org.json.JSONObject()
         params.put("title", issue.title)
-        if (issue.body.isNotEmpty()) {
-            params.put("body", issue.body)
+
+        var body = ""
+        if(issue.body.isNotEmpty()){
+            body = issue.body
         }
+
+        body += "\n\n File: [${issue.file}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line})"
+        params.put("body", body)
 
         val labels = JSONArray()
         for(label in issue.labels){
-            val usedLabel = onlineLabels.get(label)
-            if(usedLabel == null){
-                // TODO: Create new Label-type
-            }
-            labels.put(onlineLabels.get(label))
+                labels.put(label)
         }
         params.put("labels", labels)
 
