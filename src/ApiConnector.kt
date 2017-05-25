@@ -3,6 +3,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
+
+/**
+ * Git-Issue: {
+ * When no connection to internet is possible - Abort
+ * [ development ]
+ * }
+ */
 /**
  * Git-Issue: make origin selectable
  * Git-Issue: Handle ambigious titles
