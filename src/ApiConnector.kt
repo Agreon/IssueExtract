@@ -13,7 +13,7 @@ import java.util.*
  * }
  */
 /**
- * Git-Issue[149]: make origin selectable
+ * Git-Issue[149]: make origin selectable [improvement]
  */
 class ApiConnector() {
 
@@ -64,12 +64,23 @@ class ApiConnector() {
 
             var body: String
             try {
-                body = issueObj.getString("body")
+                body = ""
+                var lines = issueObj.getString("body").split("\n")
+
+                // Remove Body-end
+                for(i in 0 until lines.indices.count() - 2){
+                    body += lines[i]
+                    if(i < lines.indices.count() - 3){
+                        body += "\n"
+                    }
+                }
+
             } catch (e: Exception) {
                 body = ""
             }
 
-            val newIssue = Issue(title, body, 0, "", number.toString())
+            val newIssue = Issue(title, body, 0, "", "0")
+            newIssue.number = number.toString()
 
             val labels = issueObj.getJSONArray("labels")
 
@@ -123,13 +134,51 @@ class ApiConnector() {
         }
     }
 
+    /**
+     * Updates If Necessary
+     */
+    fun updateIfNecessary(issue: Issue) {
+        var onlineIssue = getIssue(issue)
+
+        if(onlineIssue == null){
+            println("Should never happen")
+            return
+        }
+
+        val diff = onlineIssue.getDifference(issue)
+
+        if(diff.length() == 0){
+            return
+        }
+
+        if(diff.has("body")){
+            diff.put("body",diff.getString("body") + "\n\n File: [${issue.file}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line}")
+        }
+
+        println("Updating Issue "+issue.number)
+
+        updateIssue(onlineIssue.number, diff)
+    }
+
+
+    fun updateIssue(number: String, issue: JSONObject){
+        val headers = mapOf<String, String>("Authorization" to authToken)
+
+        val resp = patch("$baseAddress/repos/$repoOwner/$repoName/issues/${number}", headers, mapOf(), issue).text
+
+        val retObj = JSONObject(resp)
+
+        if(retObj.has("message")){
+            throw Exception("[Error]: Could not connect! "+retObj.getString("message"))
+        }
+    }
 
     fun removeUnused(allFound: ArrayList<Issue>){
 
         val headers = mapOf<String, String>("Authorization" to authToken)
 
         onlineIssues
-                .filter { i -> allFound.find { j ->  j.title == i.title } == null}
+                .filter { i -> allFound.find { j ->  j.number == i.number } == null}
                 .forEach { i ->
                     println("Removing #"+i.number+": "+i.title)
 

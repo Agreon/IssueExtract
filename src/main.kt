@@ -14,7 +14,7 @@ class App {
 
 
     /**
-     * Git-Issue[157]: { More Arguments
+     * Git-Issue[174]: { More Arguments
      * >>
      * - [ ] If skip or exception on parse-error
      * <<
@@ -22,10 +22,13 @@ class App {
      * }
      */
     /**
-     * Git-Issue[158]: { More Config
+     * Git-Issue[175]: { More Config
      * >>
      *  - [ ] what name to extract to be used
-     * << }
+     *  - [ ] how the update should happen
+     * <<
+     * [improvement]
+     * }
      */
     fun run(args: Array<String>) {
         if(args.isEmpty()){

@@ -1,7 +1,4 @@
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-
 
 class Parser(){
 
@@ -13,7 +10,7 @@ class Parser(){
     var newIssues: ArrayList<Issue> = ArrayList()
 
     /**
-     * Git-Issue[156]: Let The ApiConnector run asynchronous and inform parser with replaysubject
+     * Git-Issue[156]: Let The ApiConnector run asynchronous and inform parser with replaysubject [improvement]
      */
     fun parseProject(root: File, userToken: String){
         api.authToken = userToken
@@ -41,7 +38,7 @@ class Parser(){
     }
 
     /**
-     * Git-Issue[152]: Only works if there are no ; in text
+     * Git-Issue[163]: Only works if there are no ; in text [bug]
      */
     fun parseFile(file: File){
         val lines = file.readLines()
@@ -91,7 +88,7 @@ class Parser(){
                     }
 
                     /**
-                     * Git-Issue[153]: body markers have to be in new line currently
+                     * Git-Issue[165]: body markers have to be in new line currently [bug]
                      */
                     // Fallback (Only if not in Body
                     if(j < lines[i].length - 1 && lines[i][j] == '*'  && lines[i][j+1] == '/'){
@@ -113,7 +110,7 @@ class Parser(){
 
     }
 
-    // Git-Issue[154]: Add Number-Parsing
+
     fun parseIssue(issueText: String, multiline: Boolean, lineNumber: Int, file: File){
 
         try {
@@ -125,16 +122,26 @@ class Parser(){
             if(issueContent.split(">>").size > 1){
                 issueTitle = issueContent.split(">>")[0].removeSurrounding(" ")
                 issueBody = issueContent.split(">>")[1].split("<<")[0].removeSurrounding(" ")
+            }  else {
+                issueTitle = issueContent.split("[")[0]
             }
 
             issueTitle = removeStart(issueTitle, charArrayOf(' ','*','{'))
             issueTitle = removeEnd(issueTitle, charArrayOf(' ','*','}'))
 
-            issueBody = removeEnd(issueBody, charArrayOf(' ','*','}'))
-            issueBody = removeEnd(issueBody, charArrayOf(' ','*','}'))
+            issueBody = removeStart(issueBody, charArrayOf('*','}','\n'))
+            issueBody = removeEnd(issueBody, charArrayOf(' ','*','}','\n'))
 
             val issueFound = Issue(issueTitle, issueBody, lineNumber, file.path)
 
+            val numberPart = issueText.split(":")[0].split("[")
+            // Find Number, if already added
+            if(numberPart.size > 1){
+                var number = numberPart[1].removeSuffix("]")
+                issueFound.number = number
+            }
+
+            // Find Labels
             val labels : List<String>
             if(issueBody.isEmpty()){
                 labels = issueContent.split("[")
@@ -151,6 +158,7 @@ class Parser(){
 
                 // Remove trailing stuff from last label
                 labelDef[labelDef.size - 1] = labelDef[labelDef.size - 1].split("]")[0]
+                labelDef[labelDef.size - 1] = removeEnd(labelDef[labelDef.size - 1], charArrayOf(' '))
 
                 for(label in labelDef){
                     if(label.removeSurrounding(" ").isNotEmpty())
@@ -160,23 +168,20 @@ class Parser(){
 
           foundIssue(issueFound)
         } catch (e: Exception) {
-            e.printStackTrace()
+           // e.printStackTrace()
             println("Skipping "+issueText)
         }
     }
-
-    /**
-     * Git-Issue[159]: Update Attributes like line-number online
-     */
+    
     fun foundIssue(issue: Issue){
-
-        issues.add(issue)
 
         val completeIssue = api.getIssue(issue)
 
         // Add Issue to list if not already online
         if(completeIssue == null){
             newIssues.add(issue)
+        } else {
+            issues.add(issue)
         }
 
     }
@@ -186,6 +191,16 @@ class Parser(){
      */
     fun updateRemote(){
 
+        /**
+         * Update existing issues
+         */
+        for(issue in issues){
+            api.updateIfNecessary(issue)
+        }
+
+        /**
+         * Upload new Issues
+         */
         var usedFiles: HashMap<String, File> = HashMap()
 
         for(issue in newIssues){
@@ -201,6 +216,8 @@ class Parser(){
 
             writeIssueNumber(issue, file)
         }
+
+
     }
 
     /**
