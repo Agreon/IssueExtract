@@ -18,6 +18,7 @@ class App {
      * >>
      * - [ ] If skip or exception on parse-error
      * <<
+     * [improvement]
      * }
      */
     /**

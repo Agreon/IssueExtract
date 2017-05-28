@@ -1,4 +1,6 @@
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 
 class Parser(){
@@ -21,6 +23,8 @@ class Parser(){
             println("Removing deleted Issues..")
             api.removeUnused(issues)
         }
+
+        updateRemote()
     }
 
     fun traverse(file: File){
@@ -140,7 +144,7 @@ class Parser(){
             if(labels.size == 2 && labels[1].isNotEmpty()){
                 val labelDef = labels[1].split(",") as ArrayList<String>
 
-                // TODO: Why is [ removed from label?
+                // TODO: Why is [ removed from label? Sometimes works, sometimes not
 
                 // Remove trailing stuff from first label
                 //labelDef[0] = labelDef[0].split("[")[1]
@@ -183,17 +187,16 @@ class Parser(){
              *  Maybe Use smth. like 'forEachLine()'
              *
              *  <<
-             *  [ development ]
              *  }
              */
-            api.postIssue(issue)
+           // api.postIssue(issue)
 
             /**
              * Git-Issue: Let The ApiConnector run asynchronous and inform parser with replaysubject
              */
             /**
              * Issues come back from Server
-             * wir brauchen die line-numbers und files und die richtige zeile
+             * wir brauchen die line-numbers und files
              *
              */
 
@@ -206,17 +209,58 @@ class Parser(){
      * Writes new Issues to the server and updates numbers in files
      */
     fun updateRemote(){
+
+        var usedFiles: HashMap<String, File> = HashMap()
+
         for(issue in newIssues){
             val fullIssue = api.postIssue(issue)
             issue.number = fullIssue.getInt("number").toString()
-            writeIssueNumber(issue)
+
+            var file: File
+            if (usedFiles.containsKey(issue.file)){
+                file = usedFiles.get(issue.file) as File
+            } else {
+                file = File(issue.file)
+            }
+
+            writeIssueNumber(issue, file)
         }
     }
 
     /**
      * Writes an issue number at the right position
      */
-    fun writeIssueNumber(issue: Issue){
+    fun writeIssueNumber(issue: Issue, file: File){
+
+        var lines = file.readLines()
+
+        var tempFile = createTempFile("temp","txt")
+
+        for(i in lines.indices){
+            if(i == issue.line-1){
+                var lineParts = lines[i].split(":")
+
+                var modified: String = lineParts[0] + "[" + issue.number + "]:"
+                println("START")
+
+                var another = ""
+
+                for(j in 1 until lineParts.indices.count()){
+                    modified += lineParts[j]
+
+                    another += lineParts[j]
+
+                    println(lineParts[j])
+                }
+
+                tempFile.printWriter().println(modified)
+                continue
+            }
+            tempFile.printWriter().println(lines[i])
+        }
+
+        Files.move(tempFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        val b = 0
 
     }
 
