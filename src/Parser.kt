@@ -12,6 +12,9 @@ class Parser(){
 
     var newIssues: ArrayList<Issue> = ArrayList()
 
+    /**
+     * Git-Issue[156]: Let The ApiConnector run asynchronous and inform parser with replaysubject
+     */
     fun parseProject(root: File, userToken: String){
         api.authToken = userToken
 
@@ -38,7 +41,7 @@ class Parser(){
     }
 
     /**
-     * Git-Issue: Only works if there are no ; in text
+     * Git-Issue[152]: Only works if there are no ; in text
      */
     fun parseFile(file: File){
         val lines = file.readLines()
@@ -88,7 +91,7 @@ class Parser(){
                     }
 
                     /**
-                     * Git-Issue: body markers have to be in new line currently
+                     * Git-Issue[153]: body markers have to be in new line currently
                      */
                     // Fallback (Only if not in Body
                     if(j < lines[i].length - 1 && lines[i][j] == '*'  && lines[i][j+1] == '/'){
@@ -110,7 +113,7 @@ class Parser(){
 
     }
 
-    // Git-Issue: Add Number-Parsing
+    // Git-Issue[154]: Add Number-Parsing
     fun parseIssue(issueText: String, multiline: Boolean, lineNumber: Int, file: File){
 
         try {
@@ -136,18 +139,15 @@ class Parser(){
             if(issueBody.isEmpty()){
                 labels = issueContent.split("[")
             } else {
-                labels = issueContent.split(">>")[1].split("<<")
+                labels = issueContent.split(">>")[1].split("<<")[1].split("[")
             }
 
-            // TODO: Only select if second one not empty
             // If got labels
             if(labels.size == 2 && labels[1].isNotEmpty()){
                 val labelDef = labels[1].split(",") as ArrayList<String>
 
-                // TODO: Why is [ removed from label? Sometimes works, sometimes not
-
                 // Remove trailing stuff from first label
-                //labelDef[0] = labelDef[0].split("[")[1]
+                labelDef[0] = removeStart(labelDef[0], charArrayOf('\n',' ','['))
 
                 // Remove trailing stuff from last label
                 labelDef[labelDef.size - 1] = labelDef[labelDef.size - 1].split("]")[0]
@@ -158,49 +158,25 @@ class Parser(){
                 }
             }
 
-          var issueFromRepo = foundIssue(issueFound)
+          foundIssue(issueFound)
         } catch (e: Exception) {
             e.printStackTrace()
             println("Skipping "+issueText)
         }
     }
 
+    /**
+     * Git-Issue[159]: Update Attributes like line-number online
+     */
     fun foundIssue(issue: Issue){
 
         issues.add(issue)
 
         val completeIssue = api.getIssue(issue)
 
-        // Add Issue if not already online
+        // Add Issue to list if not already online
         if(completeIssue == null){
-
             newIssues.add(issue)
-
-            /**
-             * Git-Issue: {
-             *  Write number after title after adding
-             *  >> Do this after all checking is done => We get the numbers back on adding
-             *  # TODO
-             *  - [ ] Get Back Issue from Server
-             *  - [ ] somehow save issue in array, so that the files can be written later
-             *
-             *  Maybe Use smth. like 'forEachLine()'
-             *
-             *  <<
-             *  }
-             */
-           // api.postIssue(issue)
-
-            /**
-             * Git-Issue: Let The ApiConnector run asynchronous and inform parser with replaysubject
-             */
-            /**
-             * Issues come back from Server
-             * wir brauchen die line-numbers und files
-             *
-             */
-
-            return
         }
 
     }
@@ -232,36 +208,28 @@ class Parser(){
      */
     fun writeIssueNumber(issue: Issue, file: File){
 
-        var lines = file.readLines()
+        val lines = file.readLines()
 
-        var tempFile = createTempFile("temp","txt")
+        var complete = ""
+        var lineContent: String
 
         for(i in lines.indices){
             if(i == issue.line-1){
-                var lineParts = lines[i].split(":")
+                val lineParts = lines[i].split(":")
 
-                var modified: String = lineParts[0] + "[" + issue.number + "]:"
-                println("START")
-
-                var another = ""
+                lineContent = lineParts[0] + "[" + issue.number + "]:"
 
                 for(j in 1 until lineParts.indices.count()){
-                    modified += lineParts[j]
-
-                    another += lineParts[j]
-
-                    println(lineParts[j])
+                    lineContent += lineParts[j]
                 }
 
-                tempFile.printWriter().println(modified)
-                continue
+            } else {
+                lineContent = lines[i]
             }
-            tempFile.printWriter().println(lines[i])
+            complete += lineContent + "\n"
         }
 
-        Files.move(tempFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        val b = 0
-
+        file.writeText(complete)
     }
 
     /**

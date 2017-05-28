@@ -6,15 +6,14 @@ import java.util.*
 
 
 /**
- * Git-Issue[83]]: {
+ * Git-Issue[148]: {
  * When no connection to internet is possible - Abort
  * >>  <<
  * [ development ]
  * }
  */
 /**
- * Git-Issue: make origin selectable
- * Git-Issue: Handle ambigious titles
+ * Git-Issue[149]: make origin selectable
  */
 class ApiConnector() {
 
@@ -48,7 +47,7 @@ class ApiConnector() {
     }
 
     /**
-     * Git-Issue: Check differences between local and online-issues >> Best would be to check if the numbers are the same, (if only the title changed), so the old ones don't have to be deleted. <<
+     * Git-Issue[151]: Check differences between local and online-issues >> Best would be to check if the numbers are the same, (if only the title changed), so the old ones don't have to be deleted. <<
      */
     fun getIssuesFromRepo() {
         println("Getting Issues...")
