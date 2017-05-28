@@ -25,24 +25,6 @@ Git-Issue: <Title> >> <Body> << [ labe1, label2 ]
 **/
 
 
-TODO
-    + Labels
-
-## Output-Design
-+ Title
-+ Body 
-	+ IssueText
-	+ Link zu Position in Code
-	+ Vlt. mit Methode oder Klasse beim nächsten
-		=> Einfach die Zeile Danach
-	
 TODO:
-
-HowTo Multiline
-+ if found Git-Issue 
-	+ search until ] found, that is not in >><<
-	+ add all these lines up
-
-
-
-intellij-plugin mit id-inc?
+- intellij-plugin mit id-inc?
+- Parsing with StateMachine?

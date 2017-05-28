@@ -6,7 +6,7 @@ class Issue(val title: String,
             val body: String = "",
             val line: Int = 0,
             val file: String = "",
-            val number: String = "") {
+            var number: String = "") {
 
     var labels: ArrayList<String> = ArrayList()
 

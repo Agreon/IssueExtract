@@ -1,14 +1,14 @@
 import java.io.File
 
-/**
- *
- */
+
 class Parser(){
 
     var issues: ArrayList<Issue> = ArrayList()
     var api: ApiConnector = ApiConnector()
 
     var removeFromRemote: Boolean = true
+
+    var newIssues: ArrayList<Issue> = ArrayList()
 
     fun parseProject(root: File, userToken: String){
         api.authToken = userToken
@@ -57,7 +57,7 @@ class Parser(){
                     continue
                 }
 
-                parseIssue(lines[i], false, issueLine+1, file.path)
+                parseIssue(lines[i], false, issueLine+1, file)
                 continue
             }
 
@@ -79,10 +79,13 @@ class Parser(){
                     if(parseState == 0 && lines[i][j] == '}'){
                         state = 0
                         currentIssueText += lines[i]
-                        parseIssue(currentIssueText, true, issueLine+1, file.path)
+                        parseIssue(currentIssueText, true, issueLine+1, file)
                         break
                     }
 
+                    /**
+                     * Git-Issue: body markers have to be in new line currently
+                     */
                     // Fallback (Only if not in Body
                     if(j < lines[i].length - 1 && lines[i][j] == '*'  && lines[i][j+1] == '/'){
                         println("Expected } for issue")
@@ -100,10 +103,11 @@ class Parser(){
             }
 
         }
+
     }
 
     // Git-Issue: Add Number-Parsing
-    fun parseIssue(issueText: String, multiline: Boolean, lineNumber: Int, fileName: String){
+    fun parseIssue(issueText: String, multiline: Boolean, lineNumber: Int, file: File){
 
         try {
             val issueContent = issueText.split(":")[1]
@@ -122,7 +126,7 @@ class Parser(){
             issueBody = removeEnd(issueBody, charArrayOf(' ','*','}'))
             issueBody = removeEnd(issueBody, charArrayOf(' ','*','}'))
 
-            val issueFound = Issue(issueTitle, issueBody, lineNumber, fileName)
+            val issueFound = Issue(issueTitle, issueBody, lineNumber, file.path)
 
             val labels : List<String>
             if(issueBody.isEmpty()){
@@ -131,12 +135,15 @@ class Parser(){
                 labels = issueContent.split(">>")[1].split("<<")
             }
 
+            // TODO: Only select if second one not empty
             // If got labels
-            if(labels.size > 1){
+            if(labels.size == 2 && labels[1].isNotEmpty()){
                 val labelDef = labels[1].split(",") as ArrayList<String>
 
+                // TODO: Why is [ removed from label?
+
                 // Remove trailing stuff from first label
-                labelDef[0] = labelDef[0].split("[")[1]
+                //labelDef[0] = labelDef[0].split("[")[1]
 
                 // Remove trailing stuff from last label
                 labelDef[labelDef.size - 1] = labelDef[labelDef.size - 1].split("]")[0]
@@ -147,7 +154,7 @@ class Parser(){
                 }
             }
 
-          foundIssue(issueFound)
+          var issueFromRepo = foundIssue(issueFound)
         } catch (e: Exception) {
             e.printStackTrace()
             println("Skipping "+issueText)
@@ -163,6 +170,8 @@ class Parser(){
         // Add Issue if not already online
         if(completeIssue == null){
 
+            newIssues.add(issue)
+
             /**
              * Git-Issue: {
              *  Write number after title after adding
@@ -170,17 +179,50 @@ class Parser(){
              *  # TODO
              *  - [ ] Get Back Issue from Server
              *  - [ ] somehow save issue in array, so that the files can be written later
+             *
+             *  Maybe Use smth. like 'forEachLine()'
+             *
              *  <<
              *  [ development ]
              *  }
              */
             api.postIssue(issue)
 
-
+            /**
+             * Git-Issue: Let The ApiConnector run asynchronous and inform parser with replaysubject
+             */
+            /**
+             * Issues come back from Server
+             * wir brauchen die line-numbers und files und die richtige zeile
+             *
+             */
 
             return
         }
+
     }
+
+    /**
+     * Writes new Issues to the server and updates numbers in files
+     */
+    fun updateRemote(){
+        for(issue in newIssues){
+            val fullIssue = api.postIssue(issue)
+            issue.number = fullIssue.getInt("number").toString()
+            writeIssueNumber(issue)
+        }
+    }
+
+    /**
+     * Writes an issue number at the right position
+     */
+    fun writeIssueNumber(issue: Issue){
+
+    }
+
+    /**
+     * Util
+     */
 
     fun removeStart(content: String, chars: CharArray): String {
 

@@ -13,6 +13,19 @@ class App {
     }
 
 
+    /**
+     * Git-Issue: { More Arguments
+     * >>
+     * - [ ] If skip or exception on parse-error
+     * <<
+     * }
+     */
+    /**
+     * Git-Issue: { More Config
+     * >>
+     *  - [ ] what name to extract to be used
+     * << }
+     */
     fun run(args: Array<String>) {
         if(args.isEmpty()){
             println("No path specified! Taking root...")

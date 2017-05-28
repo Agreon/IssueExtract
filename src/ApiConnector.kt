@@ -2,6 +2,7 @@ import khttp.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.util.*
 
 
 /**
@@ -85,12 +86,12 @@ class ApiConnector() {
     /**
      * Adds an Issue
      */
-    fun postIssue(issue: Issue) {
+    fun postIssue(issue: Issue): JSONObject {
 
         println("Found new Issue: " + issue.title)
 
         if (onlineIssues.find({ i -> i.title == issue.title }) != null) {
-            return
+            return JSONObject()
         }
 
         val params = org.json.JSONObject()
@@ -118,6 +119,8 @@ class ApiConnector() {
 
         if(retObj.has("message")){
             throw Exception("[Error]: Could not connect! "+retObj.getString("message"))
+        } else {
+            return retObj
         }
     }
 
