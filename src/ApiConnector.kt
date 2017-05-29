@@ -12,9 +12,6 @@ import java.util.*
  * [ development ]
  * }
  */
-/**
- * Git-Issue[149]: make origin selectable [improvement]
- */
 class ApiConnector() {
 
     var authToken: String = ""
@@ -47,7 +44,7 @@ class ApiConnector() {
     }
 
     /**
-     * Git-Issue[151]: Check differences between local and online-issues >> Best would be to check if the numbers are the same, (if only the title changed), so the old ones don't have to be deleted. <<
+     * Gets all Issues from the repository
      */
     fun getIssuesFromRepo() {
         println("Getting Issues...")
@@ -112,7 +109,7 @@ class ApiConnector() {
             body = issue.body
         }
 
-        body += "\n\n File: [${issue.file}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line})"
+        body += "\n\n File: [${issue.file}:${issue.line}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line})"
         params.put("body", body)
 
         val labels = JSONArray()
@@ -152,10 +149,10 @@ class ApiConnector() {
         }
 
         if(diff.has("body")){
-            diff.put("body",diff.getString("body") + "\n\n File: [${issue.file}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line}")
+            diff.put("body",diff.getString("body") + "\n\n File: [${issue.file}:${issue.line}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line})")
         }
 
-        println("Updating Issue "+issue.number)
+        println("Updating Issue #"+issue.number)
 
         updateIssue(onlineIssue.number, diff)
     }

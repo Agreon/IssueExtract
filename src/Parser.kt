@@ -87,10 +87,8 @@ class Parser(){
                         break
                     }
 
-                    /**
-                     * Git-Issue[165]: body markers have to be in new line currently [bug]
-                     */
-                    // Fallback (Only if not in Body
+
+                    // Fallback (Only if not in Body)
                     if(j < lines[i].length - 1 && lines[i][j] == '*'  && lines[i][j+1] == '/'){
                         println("Expected } for issue")
                         state = 0
@@ -111,6 +109,9 @@ class Parser(){
     }
 
 
+    /**
+     * Git-Issue[177]: Make Link-To-File dynamic
+     */
     fun parseIssue(issueText: String, multiline: Boolean, lineNumber: Int, file: File){
 
         try {
@@ -172,7 +173,7 @@ class Parser(){
             println("Skipping "+issueText)
         }
     }
-    
+
     fun foundIssue(issue: Issue){
 
         val completeIssue = api.getIssue(issue)
@@ -201,7 +202,7 @@ class Parser(){
         /**
          * Upload new Issues
          */
-        var usedFiles: HashMap<String, File> = HashMap()
+        val usedFiles: HashMap<String, File> = HashMap()
 
         for(issue in newIssues){
             val fullIssue = api.postIssue(issue)

@@ -26,6 +26,7 @@ class App {
      * >>
      *  - [ ] what name to extract to be used
      *  - [ ] how the update should happen
+     *  - [ ] make origin selectable
      * <<
      * [improvement]
      * }
