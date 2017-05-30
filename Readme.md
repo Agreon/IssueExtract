@@ -2,8 +2,7 @@
 
 Extracts Issues from source-code and dynamically adds and deletes them from the remote github-repository.
 
-**Be aware, that this is a early alpha and may alter your repository-issues in an unpredicted way.**
-**It closes Issues, that are not found in the code, if not specified through a paramter!**
+**Be aware, that this is a early alpha and may alter your repository-issues and your code in an unpredicted way!**
 
 ## Installation
 + `npm i -g issue-extract`
@@ -18,7 +17,7 @@ $ issue-extract <TargetDirectory> <Params>
 ```
 
 **Params**
-+ `-r=bool` remove issues from repo when deleted in code. Standart = true 
++ `-r` Close issues in repo when they are deleted in the code.
 
 ## Syntax
 **Single-Line:**

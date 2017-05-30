@@ -1,6 +1,17 @@
 import java.io.File
 import kotlin.concurrent.thread
 
+/**
+ * Git-Issue[179]: {
+ * Improve the whole Project-Strucutre
+ * >>
+ * - Add Statemachine-Parsing and decouple the parser from it
+ * - Api-Connection through interface, so that the remote gets interchangable
+ * - Prepare for mutli-user editing
+ * <<
+ * [improvement]
+ * }
+ */
 class App {
 
     var path: String = ""
@@ -17,6 +28,7 @@ class App {
      * Git-Issue[174]: { More Arguments
      * >>
      * - [ ] If skip or exception on parse-error
+     * - [ ] error-level
      * <<
      * [improvement]
      * }
@@ -32,6 +44,10 @@ class App {
      * }
      */
     fun run(args: Array<String>) {
+
+        /**
+         * Git-Issue[180]: Enable Regex-Folder-Spec [improvement]
+         */
         if(args.isEmpty()){
             println("No path specified! Taking root...")
             path = "."
@@ -39,22 +55,21 @@ class App {
             path = args[0]
         }
 
-        // TODO: Maybe switch later
-        if(args.contains("-r=false")){
-            parser.removeFromRemote = false
+        if(args.contains("-r")){
+            parser.removeFromRemote = true
         }
 
         val config = File("config.ie")
         val token = config.readLines().get(0)
         println("UserToken "+token)
 
-        val start = System.nanoTime()
+        val start = System.currentTimeMillis()
 
         parser.parseProject(File(path), token)
 
-        val end = System.nanoTime()
+        val end = System.currentTimeMillis()
 
-        println("\nRun-Time: "+end.minus(start)/1000)
+        println("\nRun-Time: "+end.minus(start)+" ms")
 
     }
 }

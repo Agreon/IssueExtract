@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="org.jetbrains.spek:spek-api:1.1.0" type="repository">
+    <properties maven-id="org.jetbrains.spek:spek-api:1.1.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/spek/spek-api/1.1.0/spek-api-1.1.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib/1.0.6/kotlin-stdlib-1.0.6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-runtime/1.0.6/kotlin-runtime-1.0.6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-reflect/1.0.6/kotlin-reflect-1.0.6.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

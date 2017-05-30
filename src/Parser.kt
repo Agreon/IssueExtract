@@ -1,11 +1,18 @@
 import java.io.File
 
+/**
+ * Git-Issue[178]: {
+ * Make it possible to reference Issues in TODO-Items
+ * >> Just write the number after a TODO and it will be added to the body of the referenced Issue <<
+ * [improvement]
+ * }
+ */
 class Parser(){
 
     var issues: ArrayList<Issue> = ArrayList()
     var api: ApiConnector = ApiConnector()
 
-    var removeFromRemote: Boolean = true
+    var removeFromRemote: Boolean = false
 
     var newIssues: ArrayList<Issue> = ArrayList()
 
@@ -14,6 +21,8 @@ class Parser(){
      */
     fun parseProject(root: File, userToken: String){
         api.authToken = userToken
+
+        println("Starting Parser")
 
         traverse(root)
 
@@ -38,7 +47,7 @@ class Parser(){
     }
 
     /**
-     * Git-Issue[163]: Only works if there are no ; in text [bug]
+     * Parses a file and searchs for 'Git-Issue'
      */
     fun parseFile(file: File){
         val lines = file.readLines()
@@ -61,7 +70,7 @@ class Parser(){
                     continue
                 }
 
-                parseIssue(lines[i], false, issueLine+1, file)
+                parseIssue(lines[i], issueLine+1, file)
                 continue
             }
 
@@ -83,7 +92,7 @@ class Parser(){
                     if(parseState == 0 && lines[i][j] == '}'){
                         state = 0
                         currentIssueText += lines[i]
-                        parseIssue(currentIssueText, true, issueLine+1, file)
+                        parseIssue(currentIssueText, issueLine+1, file)
                         break
                     }
 
@@ -112,11 +121,11 @@ class Parser(){
     /**
      * Git-Issue[177]: Make Link-To-File dynamic
      */
-    fun parseIssue(issueText: String, multiline: Boolean, lineNumber: Int, file: File){
+    fun parseIssue(issueText: String, lineNumber: Int, file: File){
 
         try {
             val issueContent = issueText.split(":")[1]
-            var issueTitle = issueContent
+            var issueTitle = ""
             var issueBody = ""
 
             // If got body
@@ -169,11 +178,14 @@ class Parser(){
 
           foundIssue(issueFound)
         } catch (e: Exception) {
-           // e.printStackTrace()
+            e.printStackTrace()
             println("Skipping "+issueText)
         }
     }
 
+    /**
+     * Checks if Issues is already in repository
+     */
     fun foundIssue(issue: Issue){
 
         val completeIssue = api.getIssue(issue)

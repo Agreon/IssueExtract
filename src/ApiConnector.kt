@@ -4,12 +4,13 @@ import org.json.JSONObject
 import java.io.File
 import java.util.*
 
-
 /**
- * Git-Issue[148]: {
- * When no connection to internet is possible - Abort
- * >>  <<
- * [ development ]
+ * Git-Issue[181]: {
+ * Refactoring
+ * >>
+ * - [ ] Handle diffrent types of errors
+ * <<
+ * [improvement]
  * }
  */
 class ApiConnector() {
@@ -18,6 +19,8 @@ class ApiConnector() {
     val baseAddress = "https://api.github.com"
 
     var onlineIssues: ArrayList<Issue> = ArrayList()
+
+    var closedIssues: ArrayList<Issue> = ArrayList()
 
     var repoOwner: String = ""
     var repoName: String = ""
@@ -45,16 +48,30 @@ class ApiConnector() {
 
     /**
      * Gets all Issues from the repository
+     * Git-Issue[182]: Is it possible to also get the closed ones for better syncing?
+     * Git-Issue[183]: Only gets 100 at a time [bug]
      */
     fun getIssuesFromRepo() {
         println("Getting Issues...")
 
-        var issues = get("$baseAddress/repos/$repoOwner/$repoName/issues").jsonArray
+        val headers = mapOf<String, String>("Authorization" to authToken)
 
-        println("Got Issues: " + issues.length())
+
+        var getting = get("$baseAddress/repos/$repoOwner/$repoName/issues", mapOf(), mapOf("state" to "all", "per_page" to "1000"))
+
+        if(getting.statusCode != 200){
+            // TODO: error
+            return
+        }
+
+        var issues = getting.jsonArray
+
+        println("Got "  + issues.length() + " Issues")
 
         for (issue in issues) {
+
             val issueObj = JSONObject(issue.toString())
+
 
             val title = issueObj.getString("title")
             val number = issueObj.getInt("number")
@@ -64,7 +81,7 @@ class ApiConnector() {
                 body = ""
                 var lines = issueObj.getString("body").split("\n")
 
-                // Remove Body-end
+                // Remove Body-end with reference to file
                 for(i in 0 until lines.indices.count() - 2){
                     body += lines[i]
                     if(i < lines.indices.count() - 3){
@@ -86,7 +103,11 @@ class ApiConnector() {
                 newIssue.addlabel(labelObj.getString("name"))
             }
 
-            onlineIssues.add(newIssue)
+            if(issueObj.getString("state") == "closed"){
+                closedIssues.add(newIssue)
+            } else {
+                onlineIssues.add(newIssue)
+            }
         }
     }
 
@@ -132,7 +153,7 @@ class ApiConnector() {
     }
 
     /**
-     * Updates If Necessary
+     * Updates Issues online if they were updated
      */
     fun updateIfNecessary(issue: Issue) {
         var onlineIssue = getIssue(issue)
