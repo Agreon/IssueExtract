@@ -6,7 +6,7 @@ import java.io.FileNotFoundException
  * Improve the whole Project-Strucutre
  * >>
  * - Prepare for mutli-user editing
- * - Move Parser to separate class
+ *  - Sync online Issue-Body to local body?
  * - Let The GithubApiConnector run asynchronous and inform parser with replaysubject
  * <<
  * [improvement]

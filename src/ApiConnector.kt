@@ -1,3 +1,4 @@
+import models.Issue
 import org.json.JSONObject
 import java.util.ArrayList
 

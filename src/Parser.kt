@@ -1,18 +1,22 @@
+import models.Issue
+import models.TodoRef
 import java.io.File
 
 /**
  * Git-Issue[178]: {
  * Make it possible to reference Issues in TODO-Items
- * >> Just write the number after a TODO and it will be added to the body of the referenced Issue <<
+ * >> Just write the number after a TODO and it will be added to the body of the referenced models.Issue <<
  * [improvement]
  * }
  */
+// TODO[#179]: Move Parser to separate class (not connected to api)
 class Parser(){
 
     var api: ApiConnector = GithubApiConnector()
 
     var issues: ArrayList<Issue> = ArrayList()
     var newIssues: ArrayList<Issue> = ArrayList()
+    var todos: HashMap<String, ArrayList<TodoRef>> = HashMap()
 
     // Parameters
     var removeFromRemote: Boolean = false
@@ -47,7 +51,7 @@ class Parser(){
     }
 
     /**
-     * Parses a file and searchs for 'Git-Issue'
+     * Parses a file and searchs for Git-Issues
      */
     fun parseFile(file: File){
         val lines = file.readLines()
@@ -58,6 +62,20 @@ class Parser(){
         var issueLine = 0
 
         for(i in lines.indices){
+
+            // Reference-Todos
+            if(state == 0 && lines[i].contains("TODO[")){
+
+                val issueRef = lines[i].split("[")[1].split("]")[0].removePrefix("#")
+                val todoText = lines[i].split("]")[1].removePrefix(":")
+
+                if(!todos.containsKey(issueRef)) {
+                    todos.put(issueRef, ArrayList())
+                }
+                todos.get(issueRef)!!.add(TodoRef(issueRef, todoText))
+            }
+
+            // Parse-Start if models.Issue found
             if(state == 0 && lines[i].contains("Git-Issue")){
 
                 issueLine = i
@@ -74,6 +92,7 @@ class Parser(){
                 continue
             }
 
+            // For multiline parsing: Addes the lines up until '}' or the comment ends
             if(state == 1) {
                 for(j in lines[i].indices){
                     if(j < lines[i].length - 1){
@@ -124,6 +143,9 @@ class Parser(){
     fun parseIssue(issueText: String, lineNumber: Int, file: File){
 
         try {
+            /**
+             * Git-Issue[#188]: Only works if there is no ; in text! [bug]
+             */
             val issueContent = issueText.split(":")[1]
             var issueTitle = ""
             var issueBody = ""
@@ -147,7 +169,7 @@ class Parser(){
             val numberPart = issueText.split(":")[0].split("[")
             // Find Number, if already added
             if(numberPart.size > 1){
-                var number = numberPart[1].removeSuffix("]")
+                var number = numberPart[1].removeSuffix("]").removePrefix("#")
                 issueFound.number = number
             }
 
@@ -178,14 +200,13 @@ class Parser(){
 
           foundIssue(issueFound)
         } catch (e: Exception) {
-            e.printStackTrace()
+            var errorText = "\u001B[31mError at ${file.path}:$lineNumber for ${issueText} \u001B[0m"
 
             if(skipParseErrors){
-                println("Skipping "+issueText)
+                println(errorText)
             } else {
-                throw Exception("Error with "+issueText)
+                throw Exception(errorText)
             }
-
         }
     }
 
@@ -194,7 +215,7 @@ class Parser(){
      */
     fun foundIssue(issue: Issue){
 
-        // Add Issue to list if not already online
+        // Add models.Issue to list if not already online
         if(issue.number == ""){
             newIssues.add(issue)
         } else {
@@ -212,6 +233,9 @@ class Parser(){
          * Update existing issues
          */
         for(issue in issues){
+
+            insertTodosInIssueBody(issue)
+
             api.updateIfNecessary(issue)
         }
 
@@ -238,6 +262,25 @@ class Parser(){
     }
 
     /**
+     * TODO[#178]: Insert referenced TODOS in issue body
+     */
+    private fun insertTodosInIssueBody(issue: Issue) {
+
+        if(!todos.containsKey(issue.number)){
+            return
+        }
+
+        var text = "#TODOS"
+
+        for (todo in todos.get(issue.number)!!){
+            text += "- ${todo.text}\n"
+        }
+
+        val b = 0
+
+    }
+
+    /**
      * Writes an issue number at the right position
      */
     fun writeIssueNumber(issue: Issue, file: File){
@@ -251,7 +294,7 @@ class Parser(){
             if(i == issue.line-1){
                 val lineParts = lines[i].split(":")
 
-                lineContent = lineParts[0] + "[" + issue.number + "]:"
+                lineContent = lineParts[0] + "[#" + issue.number + "]:"
 
                 for(j in 1 until lineParts.indices.count()){
                     lineContent += lineParts[j]
