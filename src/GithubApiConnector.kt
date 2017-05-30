@@ -4,32 +4,41 @@ import org.json.JSONObject
 import java.io.File
 import java.util.*
 
-/**
- * Git-Issue[181]: {
- * Refactoring
- * >>
- * - [ ] Move more methods into Interface
- * <<
- * [improvement]
- * }
- */
 class GithubApiConnector() : ApiConnector {
 
-    override var httpManager: HttpManager = HttpManager()
+    val httpManager: HttpManager = HttpManager()
 
     val baseAddress = "https://api.github.com"
 
-    var onlineIssues: ArrayList<Issue> = ArrayList()
+    val onlineIssues: ArrayList<Issue> = ArrayList()
 
-    var closedIssues: ArrayList<Issue> = ArrayList()
+    val closedIssues: ArrayList<Issue> = ArrayList()
 
     var repoOwner: String = ""
     var repoName: String = ""
 
     init {
         try {
-            val configFile = File(".git/config")
-            var urlLine = configFile.readLines().filter { line -> line.contains("url") }[0]
+            val configFile = File("config.ie")
+            val remoteLines = configFile.readLines().filter{ line -> line.contains("remote") }
+
+            var remote = "origin"
+            if(remoteLines.count() != 0){
+                remote = remoteLines[0].split(" ")[1]
+            }
+
+            val gitConfig = File(".git/config").readLines()
+
+            var urlIndex = -1
+
+            for(i in gitConfig.indices) {
+                if(gitConfig[i].contains(remote)) {
+                    urlIndex = i + 1
+                    break
+                }
+            }
+
+            var urlLine = gitConfig[urlIndex]
             urlLine = urlLine.split(':')[1]
             val tuple = urlLine.split('/')
 
@@ -56,7 +65,7 @@ class GithubApiConnector() : ApiConnector {
      * Gets all Issues from the repository
      * Git-Issue[182]: Is it good to get the closed ones?
      */
-    fun getIssuesFromRepo() {
+    private fun getIssuesFromRepo() {
         println("Getting Issues...")
 
         var currentPage = 1
@@ -78,7 +87,7 @@ class GithubApiConnector() : ApiConnector {
         println("Got "+allIssues+" Issues")
     }
 
-    fun addIssues(issues: JSONArray){
+    private fun addIssues(issues: JSONArray){
         for (issue in issues) {
 
             val issueObj = JSONObject(issue.toString())
@@ -125,7 +134,7 @@ class GithubApiConnector() : ApiConnector {
     /**
      * Adds an Issue
      */
-    fun postIssue(issue: Issue): JSONObject {
+    override fun postIssue(issue: Issue): JSONObject {
 
         println("Found new Issue: " + issue.title)
 
@@ -156,7 +165,7 @@ class GithubApiConnector() : ApiConnector {
     /**
      * Updates Issues online if they were updated
      */
-    fun updateIfNecessary(issue: Issue) {
+    override fun updateIfNecessary(issue: Issue) {
         var onlineIssue = getIssue(issue)
 
         if(onlineIssue == null){
@@ -179,12 +188,11 @@ class GithubApiConnector() : ApiConnector {
     }
 
 
-    fun updateIssue(number: String, issue: JSONObject){
+    private fun updateIssue(number: String, issue: JSONObject) {
         httpManager.httpPatch("$baseAddress/repos/$repoOwner/$repoName/issues/${number}", issue)
     }
 
-    fun removeUnused(allFound: ArrayList<Issue>){
-
+    override fun removeUnused(allFound: ArrayList<Issue>) {
         onlineIssues
                 .filter { i -> allFound.find { j ->  j.number == i.number } == null}
                 .forEach { i ->
@@ -197,13 +205,16 @@ class GithubApiConnector() : ApiConnector {
                 }
     }
 
-
     override fun getIssue(issue: Issue): Issue? {
         if(issue.number != ""){
             return onlineIssues.find({ i -> i.number == issue.number})
         } else {
             return onlineIssues.find({ i -> i.title == issue.title })
         }
+    }
+
+    override fun setAuthToken(token: String){
+        httpManager.setAuthToken(token)
     }
 
 }

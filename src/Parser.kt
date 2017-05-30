@@ -9,18 +9,18 @@ import java.io.File
  */
 class Parser(){
 
+    var api: ApiConnector = GithubApiConnector()
+
     var issues: ArrayList<Issue> = ArrayList()
-    var api: GithubApiConnector = GithubApiConnector()
-
-    var removeFromRemote: Boolean = false
-
     var newIssues: ArrayList<Issue> = ArrayList()
 
-    /**
-     * Git-Issue[156]: Let The GithubApiConnector run asynchronous and inform parser with replaysubject [improvement]
-     */
+    // Parameters
+    var removeFromRemote: Boolean = false
+    var skipParseErrors: Boolean = true
+
+
     fun parseProject(root: File, userToken: String){
-        api.httpManager.setAuthToken(userToken)
+        api.setAuthToken(userToken)
 
         println("Starting Parser")
 
@@ -179,7 +179,13 @@ class Parser(){
           foundIssue(issueFound)
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Skipping "+issueText)
+
+            if(skipParseErrors){
+                println("Skipping "+issueText)
+            } else {
+                throw Exception("Error with "+issueText)
+            }
+
         }
     }
 

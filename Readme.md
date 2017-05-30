@@ -8,6 +8,7 @@ Extracts Issues from source-code and dynamically adds and deletes them from the 
 + `npm i -g issue-extract`
 + Go to your [Api-Tokens](https://github.com/settings/tokens) and generate a token for IssueExtract with simple repository-access (public_repo).
 + Create a `config.ie`-file in your root-direcotry with the content: `token <your_token>`
++ If you want to specify a remote other than 'origin', just add `remote <name>`
 
 ## Usage
 Execute from your git root-directory
@@ -18,6 +19,7 @@ $ issue-extract <TargetDirectory> <Params>
 
 **Params**
 + `-r` Close issues in repo when they are deleted in the code.
++ `-b` Break execution on parse-error.
 
 ## Syntax
 **Single-Line:**

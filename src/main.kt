@@ -1,14 +1,13 @@
 import java.io.File
 import java.io.FileNotFoundException
-import kotlin.concurrent.thread
 
 /**
  * Git-Issue[179]: {
  * Improve the whole Project-Strucutre
  * >>
- * - Add Statemachine-Parsing and decouple the parser from it
- * - Api-Connection through interface, so that the remote gets interchangable
  * - Prepare for mutli-user editing
+ * - Move Parser to separate class
+ * - Let The GithubApiConnector run asynchronous and inform parser with replaysubject
  * <<
  * [improvement]
  * }
@@ -25,25 +24,6 @@ class App {
     }
 
 
-    /**
-     * Git-Issue[174]: { More Arguments
-     * >>
-     * - [ ] If skip or exception on parse-error
-     * - [ ] error-level
-     * <<
-     * [improvement]
-     * }
-     */
-    /**
-     * Git-Issue[175]: { More Config
-     * >>
-     *  - [ ] what name to extract to be used
-     *  - [ ] how the update should happen
-     *  - [ ] make origin selectable
-     * <<
-     * [improvement]
-     * }
-     */
     fun run(args: Array<String>) {
 
         /**
@@ -58,6 +38,10 @@ class App {
 
         if(args.contains("-r")){
             parser.removeFromRemote = true
+        }
+
+        if(args.contains("-b")){
+            parser.skipParseErrors = false
         }
 
         try {

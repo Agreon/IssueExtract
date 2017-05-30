@@ -39,7 +39,7 @@ class HttpManager {
     /**
      * Git-Issue[186]: Add More Error-handling [improvement]
      */
-    fun handleResponse(response: Response): Response {
+    private fun handleResponse(response: Response): Response {
         if(response.statusCode >= 400){
             val retObj = response.jsonObject
             if(response.statusCode == 403){
