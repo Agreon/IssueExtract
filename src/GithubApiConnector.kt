@@ -34,7 +34,7 @@ class GithubApiConnector() : ApiConnector {
             val tuple = urlLine.split('/')
 
             // SSH
-            if(urlLine.contains("@")){
+            if(tuple.count() < 3){
                 this.repoOwner = tuple[0]
                 this.repoName = tuple[1].split(".")[0]
             } else {
@@ -160,7 +160,6 @@ class GithubApiConnector() : ApiConnector {
         var onlineIssue = getIssue(issue)
 
         if(onlineIssue == null){
-            println("Should never happen")
             return
         }
 

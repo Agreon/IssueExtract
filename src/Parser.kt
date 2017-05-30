@@ -188,10 +188,8 @@ class Parser(){
      */
     fun foundIssue(issue: Issue){
 
-        val completeIssue = api.getIssue(issue)
-
         // Add Issue to list if not already online
-        if(completeIssue == null){
+        if(issue.number == ""){
             newIssues.add(issue)
         } else {
             issues.add(issue)
