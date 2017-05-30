@@ -10,7 +10,7 @@ Extracts Issues from source-code and dynamically adds and deletes them from the 
 + Create a `config.ie`-file in your root-direcotry with the content: `token <your_token>`
 
 ## Usage
-Execute from your main git-root-directory
+Execute from your git root-directory
 
 ```
 $ issue-extract <TargetDirectory> <Params>
