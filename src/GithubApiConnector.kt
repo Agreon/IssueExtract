@@ -32,13 +32,18 @@ class GithubApiConnector() : ApiConnector {
             var urlLine = configFile.readLines().filter { line -> line.contains("url") }[0]
             urlLine = urlLine.split(':')[1]
             val tuple = urlLine.split('/')
-            val repoName = tuple[1].split(".")[0]
 
-            this.repoOwner = tuple[0]
-            this.repoName = repoName
+            // SSH
+            if(urlLine.contains("@")){
+                this.repoOwner = tuple[0]
+                this.repoName = tuple[1].split(".")[0]
+            } else {
+                this.repoOwner = tuple[3]
+                this.repoName = tuple[4].split(".")[0]
+            }
 
-            println("User: " + tuple[0])
-            println("Repository: " + repoName)
+            println("Owner: " + this.repoOwner)
+            println("Repository: " + this.repoName)
 
             getIssuesFromRepo()
         } catch (e: Exception){
