@@ -1,4 +1,5 @@
 import java.io.File
+import java.io.FileNotFoundException
 import kotlin.concurrent.thread
 
 /**
@@ -59,17 +60,21 @@ class App {
             parser.removeFromRemote = true
         }
 
-        val config = File("config.ie")
-        val token = config.readLines().get(0)
-        println("UserToken "+token)
+        try {
+            val config = File("config.ie")
+            val token = config.readLines().get(0)
+            println("UserToken "+token)
 
-        val start = System.currentTimeMillis()
+            val start = System.currentTimeMillis()
 
-        parser.parseProject(File(path), token)
+            parser.parseProject(File(path), token)
 
-        val end = System.currentTimeMillis()
+            val end = System.currentTimeMillis()
 
-        println("\nRun-Time: "+end.minus(start)+" ms")
+            println("\nRun-Time: "+end.minus(start)+" ms")
 
+        } catch (e: FileNotFoundException) {
+            println("config.ie not found! Please add 'config.ie' with your api-token in it")
+        }
     }
 }
