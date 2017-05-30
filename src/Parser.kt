@@ -10,17 +10,17 @@ import java.io.File
 class Parser(){
 
     var issues: ArrayList<Issue> = ArrayList()
-    var api: ApiConnector = ApiConnector()
+    var api: GithubApiConnector = GithubApiConnector()
 
     var removeFromRemote: Boolean = false
 
     var newIssues: ArrayList<Issue> = ArrayList()
 
     /**
-     * Git-Issue[156]: Let The ApiConnector run asynchronous and inform parser with replaysubject [improvement]
+     * Git-Issue[156]: Let The GithubApiConnector run asynchronous and inform parser with replaysubject [improvement]
      */
     fun parseProject(root: File, userToken: String){
-        api.authToken = userToken
+        api.httpManager.setAuthToken(userToken)
 
         println("Starting Parser")
 
