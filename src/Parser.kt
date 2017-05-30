@@ -5,7 +5,7 @@ import java.io.File
 /**
  * Git-Issue[178]: {
  * Make it possible to reference Issues in TODO-Items
- * >> Just write the number after a TODO and it will be added to the body of the referenced models.Issue <<
+ * >> Just write the number after a TODO and it will be added to the body of the referenced Issue <<
  * [improvement]
  * }
  */
@@ -75,7 +75,7 @@ class Parser(){
                 todos.get(issueRef)!!.add(TodoRef(issueRef, todoText))
             }
 
-            // Parse-Start if models.Issue found
+            // Parse-Start if Issue found
             if(state == 0 && lines[i].contains("Git-Issue")){
 
                 issueLine = i
@@ -215,7 +215,7 @@ class Parser(){
      */
     fun foundIssue(issue: Issue){
 
-        // Add models.Issue to list if not already online
+        // Add Issue to list if not already online
         if(issue.number == ""){
             newIssues.add(issue)
         } else {

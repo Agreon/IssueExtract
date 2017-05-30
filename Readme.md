@@ -1,4 +1,4 @@
-# models.Issue-Extract
+# Issue-Extract
 
 Extracts Issues from source-code and dynamically adds and deletes them from the remote github-repository.
 
@@ -24,12 +24,12 @@ $ issue-extract <TargetDirectory> <Params>
 ## Syntax
 **Single-Line:**
 ```
-Git-models.Issue: <Title> >> <Body> << [<labe1>, <label2>]`
+Git-Issue: <Title> >> <Body> << [<labe1>, <label2>]`
 ```
 
 **Multi-Line:**
 ```
-Git-models.Issue: {
+Git-Issue: {
 	<Title>
 	>> <Body> << 
 	[<label1>, <label2>]

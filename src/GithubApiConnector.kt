@@ -132,11 +132,11 @@ class GithubApiConnector() : ApiConnector {
 
 
     /**
-     * Adds an models.Issue
+     * Adds an Issue
      */
     override fun postIssue(issue: Issue): JSONObject {
 
-        println("Found new models.Issue: " + issue.title)
+        println("Found new Issue: " + issue.title)
 
         if (onlineIssues.find({ i -> i.title == issue.title }) != null) {
             return JSONObject()
@@ -182,7 +182,7 @@ class GithubApiConnector() : ApiConnector {
             diff.put("body",diff.getString("body") + "\n\n File: [${issue.file}:${issue.line}](https://github.com/$repoOwner/$repoName/blob/master/${issue.file}#L${issue.line})")
         }
 
-        println("Updating models.Issue #"+issue.number)
+        println("Updating Issue #"+issue.number)
 
         updateIssue(onlineIssue.number, diff)
     }
