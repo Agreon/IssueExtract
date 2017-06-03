@@ -1,6 +1,7 @@
 import models.Issue
 import models.TodoRef
 import java.io.File
+import java.util.*
 
 /**
  * Git-Issue[178]: {
@@ -143,10 +144,9 @@ class Parser(){
     fun parseIssue(issueText: String, lineNumber: Int, file: File){
 
         try {
-            /**
-             * Git-Issue[#188]: Only works if there is no ; in text! [bug]
-             */
-            val issueContent = issueText.split(":")[1]
+
+            val issueParts = issueText.split(":")
+            val issueContent = issueParts.subList(1, issueParts.count()).reduce{s1,s2 -> s1+":"+s2}
             var issueTitle = ""
             var issueBody = ""
 
